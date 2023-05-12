@@ -1,10 +1,12 @@
-import 'dart:io';
+// ignore_for_file: prefer_const_constructors
 
-import 'package:chatapp/Constants/register_const.dart';
+import 'package:chatapp/Constants/text_const.dart';
+import 'package:chatapp/Helper/dialogs.dart';
 import 'package:chatapp/Screens/users_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import '../Api/apis.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -13,20 +15,45 @@ class SignUpPage extends StatefulWidget {
   State<SignUpPage> createState() => _SignUpPageState();
 }
 
+_handleBtnGoogleClick(BuildContext context) {
+  Dialogs().showProgressBar(context);
+  _signInWithGoogle(context).then((user) => {
+        Navigator.pop(context),
+        if (user != null)
+          {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => UserList()),
+            )
+          }
+      });
+}
+
+Future<UserCredential?> _signInWithGoogle(BuildContext context) async {
+  try {
+    // Trigger the authentication flow
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+    // Once signed in, return the UserCredential
+    return await APIs.auth.signInWithCredential(credential);
+  } catch (e) {
+    print("\n\n\n\n\nFirebase Google Sign In de hata var\n\n\n");
+    Dialogs().showSnackBar(context, "Something Went Wrong");
+    return null;
+  }
+}
+
 class _SignUpPageState extends State<SignUpPage> {
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
   late TextEditingController _userName;
-  File? _image;
-
-  Future pickImage(ImageSource source) async {
-    final image = await ImagePicker().pickImage(source: source);
-    if (image == null) return;
-    File? img = File(image.path);
-    setState(() {
-      _image = img;
-    });
-  }
 
   @override
   void initState() {
@@ -64,13 +91,13 @@ class _SignUpPageState extends State<SignUpPage> {
                 color: Colors.blue,
                 child: Column(
                   children: [
-                    PhotoPicker(),
                     UserNameView(userName: _userName),
                     EmailView(emailController: _emailController),
                     PasswordView(passwordController: _passwordController),
                     SignUpButton(
                         emailController: _emailController,
-                        passwordController: _passwordController)
+                        passwordController: _passwordController),
+                    GoggleButton(),
                   ],
                 ),
               ),
@@ -82,43 +109,45 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 }
 
-class SignUpButton extends StatelessWidget {
-  const SignUpButton({
+class GoggleButton extends StatelessWidget {
+  const GoggleButton({
     super.key,
-    required TextEditingController emailController,
-    required TextEditingController passwordController,
-  })  : _emailController = emailController,
-        _passwordController = passwordController;
-
-  final TextEditingController _emailController;
-  final TextEditingController _passwordController;
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: SizedBox(
-          width: 150,
-          height: 50,
-          child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.pink,
-                  textStyle:
-                      const TextStyle(fontSize: 18, color: Colors.white)),
-              onPressed: () async {
-                FirebaseAuth auth = FirebaseAuth.instance;
+    return SizedBox(
+      width: 350,
+      height: 50,
+      child: ElevatedButton.icon(
+          onPressed: () {
+            _handleBtnGoogleClick(context);
+          },
+          icon: Image.asset(RegisterConst.googleImage),
+          label: const Text(RegisterConst.signInButtonText),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+          )),
+    );
+  }
+}
 
-                await auth
-                    .createUserWithEmailAndPassword(
-                        email: _emailController.text,
-                        password: _passwordController.text)
-                    .then((value) => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const UserList())));
-              },
-              child: const Text('Sign Up')),
-        ));
+class LogoImage extends StatelessWidget {
+  const LogoImage({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.blue,
+        image: DecorationImage(
+          image: AssetImage(RegisterConst.logoImage),
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
   }
 }
 
@@ -191,58 +220,47 @@ class UserNameView extends StatelessWidget {
             filled: true,
             fillColor: Color.fromARGB(255, 173, 123, 233),
             border: OutlineInputBorder(),
-            labelText: 'UserName',
+            labelText: 'User Name',
             prefixIcon: Icon(Icons.person)),
       ),
     );
   }
 }
 
-class PhotoPicker extends StatelessWidget {
-  const PhotoPicker({
+class SignUpButton extends StatelessWidget {
+  const SignUpButton({
     super.key,
-  });
+    required TextEditingController emailController,
+    required TextEditingController passwordController,
+  })  : _emailController = emailController,
+        _passwordController = passwordController;
 
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: InkWell(
-        onTap: () {
-          // İnkwel ile tıklama işlemleri
-        },
-        child: Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.red,
-          ),
-          child: Icon(
-            Icons.add,
-            color: Colors.white,
-            size: 30,
-          ),
-        ),
-      ),
-    );
+  final TextEditingController _emailController;
+  final TextEditingController _passwordController;
+
+  void firebaseSignUp(BuildContext context) async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    await auth
+        .createUserWithEmailAndPassword(
+            email: _emailController.text, password: _passwordController.text)
+        .then((value) => Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => UserList())));
   }
-}
-
-class LogoImage extends StatelessWidget {
-  const LogoImage({
-    super.key,
-  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.blue,
-        image: DecorationImage(
-          image: AssetImage(RegisterConst.logoImage),
-          fit: BoxFit.contain,
-        ),
-      ),
-    );
+    return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: SizedBox(
+          width: 150,
+          height: 50,
+          child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.pink,
+                  textStyle:
+                      const TextStyle(fontSize: 18, color: Colors.white)),
+              onPressed: () => firebaseSignUp(context),
+              child: const Text('Sign Up')),
+        ));
   }
 }

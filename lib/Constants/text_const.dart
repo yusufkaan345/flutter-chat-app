@@ -5,5 +5,6 @@ class RegisterConst {
   static const signUp = 'Sign Up ';
   static const googleImage = 'assets/png/google.png';
   static const logoImage = 'assets/png/chatlogo2-removebg.png';
-  static const signInButtonText = 'Sign in with Google';
+  static const cameraImage = 'assets/png/camera2.png';
+  static const signInButtonText = 'Sign In With Google';
 }
