@@ -1,5 +1,4 @@
 // ignore_for_file: prefer_const_constructors
-
 import 'package:chatapp/Constants/text_const.dart';
 import 'package:chatapp/Helper/dialogs.dart';
 import 'package:chatapp/Screens/users_list.dart';
@@ -10,21 +9,31 @@ import '../Api/apis.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
-
   @override
   State<SignUpPage> createState() => _SignUpPageState();
 }
 
 _handleBtnGoogleClick(BuildContext context) {
   Dialogs().showProgressBar(context);
-  _signInWithGoogle(context).then((user) => {
+  _signInWithGoogle(context).then((user) async => {
         Navigator.pop(context),
         if (user != null)
           {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => UserList()),
-            )
+            if (await APIs.isUserExist())
+              {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => UserList()),
+                )
+              }
+            else
+              {
+                await APIs.createUser()
+                    .then((value) => Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => UserList()),
+                        ))
+              }
           }
       });
 }
@@ -95,8 +104,10 @@ class _SignUpPageState extends State<SignUpPage> {
                     EmailView(emailController: _emailController),
                     PasswordView(passwordController: _passwordController),
                     SignUpButton(
-                        emailController: _emailController,
-                        passwordController: _passwordController),
+                      emailController: _emailController,
+                      passwordController: _passwordController,
+                      username: _userName,
+                    ),
                     GoggleButton(),
                   ],
                 ),
@@ -228,23 +239,35 @@ class UserNameView extends StatelessWidget {
 }
 
 class SignUpButton extends StatelessWidget {
-  const SignUpButton({
-    super.key,
-    required TextEditingController emailController,
-    required TextEditingController passwordController,
-  })  : _emailController = emailController,
-        _passwordController = passwordController;
+  const SignUpButton(
+      {super.key,
+      required TextEditingController emailController,
+      required TextEditingController passwordController,
+      required TextEditingController username})
+      : _emailController = emailController,
+        _passwordController = passwordController,
+        _username = username;
 
   final TextEditingController _emailController;
   final TextEditingController _passwordController;
+  final TextEditingController _username;
 
   void firebaseSignUp(BuildContext context) async {
-    FirebaseAuth auth = FirebaseAuth.instance;
-    await auth
-        .createUserWithEmailAndPassword(
-            email: _emailController.text, password: _passwordController.text)
-        .then((value) => Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => UserList())));
+    await APIs.auth.createUserWithEmailAndPassword(
+        email: _emailController.text, password: _passwordController.text);
+    if (await APIs.isUserExist()) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => UserList()),
+      );
+    } else {
+      await APIs.createUserCustom(
+              _username.text.toString(), _emailController.text.toString())
+          .then((value) => Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => UserList()),
+              ));
+    }
   }
 
   @override
