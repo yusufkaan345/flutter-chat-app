@@ -1,17 +1,20 @@
-// ignore_for_file: prefer_const_constructors, use_build_context_synchronously
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously, prefer_const_literals_to_create_immutables
+
+import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chatapp/Constants/text_const.dart';
 import 'package:chatapp/Helper/dialogs.dart';
 import 'package:chatapp/Screens/sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:image_picker/image_picker.dart';
 import '../Api/apis.dart';
 import '../Models/chat_user.dart';
 
 class ProphileScreen extends StatefulWidget {
   final ChatUser user;
   const ProphileScreen({super.key, required this.user});
-
   @override
   State<ProphileScreen> createState() => _ProphileScreenState();
 }
@@ -19,6 +22,7 @@ class ProphileScreen extends StatefulWidget {
 class _ProphileScreenState extends State<ProphileScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  String? _image;
   @override
   Widget build(BuildContext context) {
     var mq = MediaQuery.of(context).size;
@@ -34,7 +38,6 @@ class _ProphileScreenState extends State<ProphileScreen> {
             await APIs.auth.signOut().then((value) async {
               await GoogleSignIn().signOut().then((value) {
                 Dialogs().showProgressBar(context);
-
                 Navigator.pop(context);
                 Navigator.pushReplacement(
                   context,
@@ -58,23 +61,37 @@ class _ProphileScreenState extends State<ProphileScreen> {
                     left: mq.height * .06),
                 child: Stack(
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(1000),
-                      child: CachedNetworkImage(
-                        width: mq.width * .4,
-                        height: mq.width * .4,
-                        fit: BoxFit.cover,
-                        imageUrl: widget.user.image.toString(),
-                        placeholder: (context, url) =>
-                            CircularProgressIndicator(),
-                        errorWidget: (context, url, error) => Icon(Icons.error),
-                      ),
-                    ),
+                    _image != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(1000),
+                            child: Image.file(
+                              File(_image!),
+                              width: mq.width * .4,
+                              height: mq.width * .4,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(1000),
+                            child: CachedNetworkImage(
+                              width: mq.width * .4,
+                              height: mq.width * .4,
+                              fit: BoxFit.cover,
+                              imageUrl: widget.user.image.toString(),
+                              placeholder: (context, url) =>
+                                  CircularProgressIndicator(),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.error),
+                            )),
                     Positioned(
                       bottom: 0,
                       right: 0,
+
+                      //Edit image button
                       child: MaterialButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          _showBottomSheet();
+                        },
                         shape: CircleBorder(),
                         color: Colors.white,
                         child: Icon(
@@ -163,6 +180,73 @@ class _ProphileScreenState extends State<ProphileScreen> {
       ),
     );
   }
-}
 
-void showBottomSheet() {}
+  void _showBottomSheet() {
+    showModalBottomSheet(
+        context: context,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20), topRight: Radius.circular(20))),
+        builder: (_) {
+          return ListView(
+            shrinkWrap: true,
+            padding: EdgeInsets.only(top: 20, bottom: 50),
+            children: [
+              Text(
+                "Pick Profile Picture",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(
+                width: 50,
+                height: 30,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: CircleBorder(),
+                        fixedSize: Size(100, 110),
+                      ),
+                      onPressed: () async {
+                        final ImagePicker picker = ImagePicker();
+                        final XFile? image =
+                            await picker.pickImage(source: ImageSource.gallery);
+                        setState(() {
+                          _image = image?.path;
+                        });
+                        APIs.updateProfileImage(File(_image!));
+
+                        //for hiding bottom sheet
+                        Navigator.pop(context);
+                      },
+                      child: Image.asset(RegisterConst.addImage)),
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: CircleBorder(),
+                          fixedSize: Size(100, 110)),
+                      onPressed: () async {
+                        final ImagePicker picker = ImagePicker();
+                        final XFile? image =
+                            await picker.pickImage(source: ImageSource.camera);
+                        setState(() {
+                          _image = image?.path;
+                        });
+                        APIs.updateProfileImage(File(_image!));
+                        //for hiding bottom sheet
+                        Navigator.pop(context);
+                      },
+                      child: Image.asset(RegisterConst.cameraImage))
+                ],
+              )
+            ],
+          );
+        });
+  }
+}

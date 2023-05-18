@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:chatapp/Models/chat_user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class APIs {
   static FirebaseAuth auth = FirebaseAuth.instance;
   static FirebaseFirestore firestore = FirebaseFirestore.instance;
+  static FirebaseStorage storage = FirebaseStorage.instance;
 
   static User get user => auth.currentUser!;
   //is user exist or not
@@ -14,6 +18,7 @@ class APIs {
 
   //for storing self information
   static late ChatUser me;
+
   //Get self info
   static Future<void> getSelfInfo() async {
     await firestore
@@ -82,5 +87,24 @@ class APIs {
         .collection("users")
         .doc(user.uid)
         .update({'name': me.name, 'about': me.about});
+  }
+
+  static Future<void> updateProfileImage(File file) async {
+    //getting image file extention (jpg  or png??)
+    final ext = file.path.split(".").last;
+    //storage file ref with path
+    final ref = storage.ref().child('profile_images/${user.uid}.$ext');
+    //upload image
+    await ref.putFile(file, SettableMetadata(contentType: 'images/$ext'));
+    me.image = await ref.getDownloadURL();
+    //uploading image in firestore database
+    firestore.collection('users').doc(user.uid).update({
+      'image': me.image,
+    });
+  }
+
+//////////////////CHAT SCREEN APIS//////////
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getMessages() {
+    return APIs.firestore.collection('messages').snapshots();
   }
 }

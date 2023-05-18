@@ -2,6 +2,8 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatapp/Models/chat_user.dart';
+import 'package:chatapp/Screens/chat_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class UserCard extends StatefulWidget {
@@ -25,7 +27,14 @@ class _UserCardState extends State<UserCard> {
         color: Colors.purple.shade100,
         elevation: 4,
         child: InkWell(
-          onTap: () {},
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => ChatScreen(
+                          user: widget.user,
+                        )));
+          },
           child: Center(
             child: ListTile(
                 title: Text(widget.user.name.toString()),
