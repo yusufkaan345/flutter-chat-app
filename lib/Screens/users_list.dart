@@ -1,7 +1,4 @@
 // ignore_for_file: prefer_const_constructors, use_build_context_synchronously, non_constant_identifier_names, unused_field
-import 'dart:convert';
-import 'dart:math';
-
 import 'package:chatapp/Api/apis.dart';
 import 'package:chatapp/Models/chat_user.dart';
 import 'package:chatapp/Screens/prophile_screen.dart';

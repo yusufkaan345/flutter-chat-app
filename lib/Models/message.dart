@@ -19,12 +19,13 @@ class Message {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['msg'] = this.msg;
-    data['read'] = this.read;
-    data['told'] = this.told;
-    data['type'] = this.type;
-    data['sent'] = this.sent;
-    data['fromId'] = this.fromId;
+    data['msg'] = msg;
+    data['read'] = read;
+    data['told'] = told;
+    data['type'] = type.toString().split('.').last;
+
+    data['sent'] = sent;
+    data['fromId'] = fromId;
     return data;
   }
 }
