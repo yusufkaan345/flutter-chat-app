@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:chatapp/Api/apis.dart';
+import 'package:chatapp/Constants/color_constants.dart';
 import 'package:chatapp/Screens/sign_up.dart';
 import 'package:chatapp/Screens/users_list.dart';
 import 'package:flutter/material.dart';
@@ -43,12 +44,12 @@ class _SplashScreenState extends State<SplashScreen> {
           Expanded(
             flex: 5,
             child: Container(
-              color: Colors.blue,
+              color: Appcolors.bg,
               child: const Center(
                 child: Text(
                   'Welcome To Chit Chat 💜',
                   style: TextStyle(
-                      fontSize: 34, color: Color.fromARGB(255, 205, 140, 212)),
+                      fontSize: 34, color: Color.fromARGB(255, 200, 132, 208)),
                 ),
               ),
             ),
@@ -68,7 +69,7 @@ class LogoImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.blue,
+        color: Color.fromARGB(255, 64, 169, 244),
         image: DecorationImage(
           image: AssetImage(RegisterConst.logoImage),
           fit: BoxFit.contain,

@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chatapp/Constants/color_constants.dart';
 import 'package:chatapp/Helper/my_date_util.dart';
 import 'package:chatapp/Models/chat_user.dart';
 import 'package:chatapp/Screens/chat_screen.dart';
@@ -29,7 +30,7 @@ class _UserCardState extends State<UserCard> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        color: Colors.green.shade100,
+        color: Color.fromARGB(255, 130, 66, 234),
         elevation: 4,
         child: InkWell(
           onTap: () {
@@ -59,7 +60,9 @@ class _UserCardState extends State<UserCard> {
                     title: Text(widget.user.name.toString()),
                     subtitle: Text(
                       _message != null
-                          ? _message!.msg.toString()
+                          ? _message!.type.toString() == "Type.image"
+                              ? "image"
+                              : _message!.msg.toString()
                           : widget.user.about.toString(),
                       maxLines: 1,
                     ),
@@ -83,7 +86,7 @@ class _UserCardState extends State<UserCard> {
                                 width: 15,
                                 height: 15,
                                 decoration: BoxDecoration(
-                                    color: Colors.greenAccent.shade400,
+                                    color: Colors.purple.shade400,
                                     borderRadius: BorderRadius.circular(15)),
                               )
                             : Text(MyDate.getlastMessageTime(

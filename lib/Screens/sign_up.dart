@@ -1,6 +1,8 @@
 // ignore_for_file: prefer_const_constructors
+import 'package:chatapp/Constants/color_constants.dart';
 import 'package:chatapp/Constants/text_const.dart';
 import 'package:chatapp/Helper/dialogs.dart';
+import 'package:chatapp/Screens/log_in.dart';
 import 'package:chatapp/Screens/users_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +55,6 @@ Future<UserCredential?> _signInWithGoogle(BuildContext context) async {
     // Once signed in, return the UserCredential
     return await APIs.auth.signInWithCredential(credential);
   } catch (e) {
-    print("\n\n\n\n\nFirebase Google Sign In de hata var\n\n\n");
     Dialogs().showSnackBar(context, "Something Went Wrong");
     return null;
   }
@@ -93,11 +94,11 @@ class _SignUpPageState extends State<SignUpPage> {
         },
         child: Column(
           children: [
-            Expanded(flex: 3, child: LogoImage()),
+            Expanded(flex: 4, child: LogoImage()),
             Expanded(
               flex: 7,
               child: Container(
-                color: Colors.blue,
+                color: Appcolors.bg,
                 child: Column(
                   children: [
                     UserNameView(userName: _userName),
@@ -109,6 +110,19 @@ class _SignUpPageState extends State<SignUpPage> {
                       username: _userName,
                     ),
                     GoggleButton(),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => LogInPage()));
+                      },
+                      child: Text(
+                        "Do you have an account?",
+                        style: TextStyle(
+                            fontSize: 18,
+                            decoration: TextDecoration.underline,
+                            color: Colors.white),
+                      ),
+                    )
                   ],
                 ),
               ),
@@ -127,8 +141,9 @@ class GoggleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context).size;
     return SizedBox(
-      width: 350,
+      width: mq.width * 0.80,
       height: 50,
       child: ElevatedButton.icon(
           onPressed: () {
@@ -137,7 +152,7 @@ class GoggleButton extends StatelessWidget {
           icon: Image.asset(RegisterConst.googleImage),
           label: const Text(RegisterConst.signInButtonText),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
+            backgroundColor: Appcolors.inputButtonBg,
           )),
     );
   }
@@ -152,7 +167,7 @@ class LogoImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.blue,
+        color: Appcolors.bg,
         image: DecorationImage(
           image: AssetImage(RegisterConst.logoImage),
           fit: BoxFit.contain,
@@ -175,14 +190,19 @@ class PasswordView extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
       child: TextField(
+        style: TextStyle(color: Colors.white),
         controller: _passwordController,
         obscureText: true,
-        decoration: const InputDecoration(
-            border: OutlineInputBorder(),
+        decoration: InputDecoration(
             filled: true,
-            fillColor: Color.fromARGB(255, 173, 123, 233),
+            fillColor: Appcolors.inputBg,
+            border: OutlineInputBorder(),
+            labelStyle: TextStyle(color: Colors.white),
             labelText: 'Password',
-            prefixIcon: Icon(Icons.remove_red_eye)),
+            prefixIcon: Icon(
+              Icons.remove_red_eye,
+              color: Colors.white,
+            )),
       ),
     );
   }
@@ -199,17 +219,21 @@ class EmailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: TextField(
-        controller: _emailController,
-        decoration: const InputDecoration(
-            filled: true,
-            fillColor: Color.fromARGB(255, 173, 123, 233),
-            border: OutlineInputBorder(),
-            labelText: 'Email',
-            prefixIcon: Icon(Icons.mail)),
-      ),
-    );
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        child: TextField(
+          style: TextStyle(color: Colors.white),
+          controller: _emailController,
+          decoration: InputDecoration(
+              filled: true,
+              fillColor: Appcolors.inputBg,
+              border: OutlineInputBorder(),
+              labelStyle: TextStyle(color: Colors.white),
+              labelText: 'Email',
+              prefixIcon: Icon(
+                Icons.mail,
+                color: Colors.white,
+              )),
+        ));
   }
 }
 
@@ -224,15 +248,20 @@ class UserNameView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: TextField(
+        style: TextStyle(color: Colors.white),
         controller: _userName,
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
             filled: true,
-            fillColor: Color.fromARGB(255, 173, 123, 233),
+            fillColor: Appcolors.inputBg,
             border: OutlineInputBorder(),
-            labelText: 'User Name',
-            prefixIcon: Icon(Icons.person)),
+            labelStyle: TextStyle(color: Colors.white),
+            labelText: 'Username',
+            prefixIcon: Icon(
+              Icons.person,
+              color: Colors.white,
+            )),
       ),
     );
   }
@@ -272,18 +301,19 @@ class SignUpButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context).size;
     return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: SizedBox(
-          width: 150,
-          height: 50,
-          child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.pink,
-                  textStyle:
-                      const TextStyle(fontSize: 18, color: Colors.white)),
-              onPressed: () => firebaseSignUp(context),
-              child: const Text('Sign Up')),
-        ));
+      padding: EdgeInsets.symmetric(vertical: 20),
+      child: SizedBox(
+        width: mq.width * 0.80,
+        height: 50,
+        child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Appcolors.inputButtonBg,
+                textStyle: TextStyle(fontSize: 18, color: Colors.white)),
+            onPressed: () => firebaseSignUp(context),
+            child: Text('Sign Up')),
+      ),
+    );
   }
 }

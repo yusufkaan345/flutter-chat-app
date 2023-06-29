@@ -17,13 +17,6 @@ class MessageCard extends StatefulWidget {
 
 class _MessageCardState extends State<MessageCard> {
   @override
-  void initState() {
-    final type = widget.message.type;
-    print(type.runtimeType);
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return APIs.user.uid == widget.message.fromId
         ? greenMessage()
@@ -31,8 +24,8 @@ class _MessageCardState extends State<MessageCard> {
   }
 
   Widget blueMessage() {
-    final type = widget.message.type;
-    print(type);
+    final type = widget.message.type.toString();
+
     if (widget.message.read.toString().isEmpty) {
       APIs.updateMessageReadStatus(widget.message);
     }
@@ -63,13 +56,17 @@ class _MessageCardState extends State<MessageCard> {
                           ),
                         )
                       : ClipRRect(
+                          borderRadius: BorderRadius.all(Radius.circular(15)),
                           child: CachedNetworkImage(
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
+                            width: 350,
+                            height: 450,
+                            fit: BoxFit.fill,
                             imageUrl: widget.message.msg.toString(),
-                            placeholder: (context, url) =>
-                                CircularProgressIndicator(),
+                            placeholder: (context, url) => SizedBox(
+                              width: 50,
+                              height: 50,
+                              child: CircularProgressIndicator(),
+                            ),
                             errorWidget: (context, url, error) => Icon(
                               Icons.image,
                               size: 70,
@@ -95,7 +92,7 @@ class _MessageCardState extends State<MessageCard> {
 
   Widget greenMessage() {
     final String type = widget.message.type.toString();
-    print(type);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -130,13 +127,17 @@ class _MessageCardState extends State<MessageCard> {
                           ),
                         )
                       : ClipRRect(
+                          borderRadius: BorderRadius.all(Radius.circular(15)),
                           child: CachedNetworkImage(
                             width: 350,
                             height: 450,
                             fit: BoxFit.cover,
                             imageUrl: widget.message.msg.toString(),
-                            placeholder: (context, url) =>
-                                CircularProgressIndicator(),
+                            placeholder: (context, url) => SizedBox(
+                              width: 50,
+                              height: 50,
+                              child: CircularProgressIndicator(),
+                            ),
                             errorWidget: (context, url, error) => Icon(
                               Icons.image_aspect_ratio_outlined,
                               size: 70,

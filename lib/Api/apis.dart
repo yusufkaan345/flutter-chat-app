@@ -1,10 +1,8 @@
 import 'dart:io';
-
 import 'package:chatapp/Models/chat_user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-
 import '../Models/message.dart';
 
 class APIs {
@@ -116,6 +114,7 @@ class APIs {
       ChatUser user) {
     return APIs.firestore
         .collection('chats/${getConversationId(user.id.toString())}/messages')
+        .orderBy('sent', descending: true)
         .snapshots();
   }
 
@@ -165,5 +164,21 @@ class APIs {
     final imageUrl = await ref.getDownloadURL();
     //uploading image in firestore database
     await sendMessage(ChatUser, imageUrl, Type.image);
+  }
+
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getUserInfo(
+      ChatUser chatUser) {
+    return firestore
+        .collection('users')
+        .where('id', isEqualTo: chatUser.id)
+        .snapshots();
+  }
+
+  //update isonline status
+  static Future<void> updateActiveStatus(bool isOnline) async {
+    await firestore.collection('users').doc(user.uid).update({
+      "isOnline": isOnline,
+      'last_active': DateTime.now().microsecondsSinceEpoch.toString()
+    });
   }
 }

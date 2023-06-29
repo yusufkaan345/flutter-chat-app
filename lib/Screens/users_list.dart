@@ -1,12 +1,12 @@
 // ignore_for_file: prefer_const_constructors, use_build_context_synchronously, non_constant_identifier_names, unused_field
 import 'package:chatapp/Api/apis.dart';
+import 'package:chatapp/Constants/color_constants.dart';
 import 'package:chatapp/Models/chat_user.dart';
 import 'package:chatapp/Screens/prophile_screen.dart';
-import 'package:chatapp/Screens/sign_up.dart';
 import 'package:chatapp/widgets/chat_user_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/services.dart';
 
 class UserList extends StatefulWidget {
   const UserList({super.key});
@@ -16,12 +16,19 @@ class UserList extends StatefulWidget {
 
 class _UserListState extends State<UserList> {
   List<ChatUser> UserList = [];
-  List<ChatUser> _searchList = [];
+  final List<ChatUser> _searchList = [];
   bool _isSearch = false;
 
   @override
   void initState() {
     APIs.getSelfInfo();
+    APIs.updateActiveStatus(true);
+    SystemChannels.lifecycle.setMessageHandler((message) {
+      if (message.toString().contains("paused")) APIs.updateActiveStatus(false);
+      if (message.toString().contains("resume")) APIs.updateActiveStatus(true);
+
+      return Future.value(message);
+    });
     super.initState();
   }
 
@@ -31,17 +38,16 @@ class _UserListState extends State<UserList> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         appBar: AppBar(
+          backgroundColor: Appcolors.bg,
           title: _isSearch
               ? TextField(
                   decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: "Search : Name, Email...",
-                  ),
+                      border: InputBorder.none,
+                      hintText: "Search : Name, Email...",
+                      hintStyle: TextStyle(color: Colors.white)),
                   autofocus: true,
                   style: TextStyle(
-                    fontSize: 18,
-                    letterSpacing: 0.7,
-                  ),
+                      fontSize: 18, letterSpacing: 0.7, color: Colors.white),
                   //when search text change update to seachlist
                   onChanged: (val) {
                     //search operations
@@ -60,8 +66,14 @@ class _UserListState extends State<UserList> {
                     }
                   },
                 )
-              : Text("Chit Chat"),
-          leading: Icon(Icons.home),
+              : Text(
+                  "Chit Chat",
+                  style: TextStyle(color: Colors.white),
+                ),
+          leading: Icon(
+            Icons.home,
+            color: Colors.white,
+          ),
           actions: [
             //search user button
             IconButton(
@@ -70,7 +82,10 @@ class _UserListState extends State<UserList> {
                     _isSearch = !_isSearch;
                   });
                 },
-                icon: Icon(_isSearch ? Icons.close : Icons.search)),
+                icon: Icon(
+                  _isSearch ? Icons.close : Icons.search,
+                  color: Colors.white,
+                )),
 
             //user prophile icon
             IconButton(
@@ -82,56 +97,52 @@ class _UserListState extends State<UserList> {
                                 user: APIs.me,
                               )));
                 },
-                icon: Icon(Icons.more_vert)),
+                icon: Icon(
+                  Icons.more_vert,
+                  color: Colors.white,
+                )),
           ],
         ),
-        floatingActionButton: Padding(
-          padding: EdgeInsets.only(bottom: 10),
-          child: FloatingActionButton(
-            onPressed: () async {
-              await APIs.auth.signOut();
-              await GoogleSignIn().signOut();
-              Navigator.pushReplacement(
-                  context, MaterialPageRoute(builder: (_) => SignUpPage()));
-            },
-            child: Icon(Icons.add_comment_rounded),
-          ),
+        body: Container(
+          color: Appcolors.bg,
+          child: Padding(
+              padding: EdgeInsets.only(top: 10.0),
+              child: StreamBuilder<QuerySnapshot>(
+                stream: APIs.getAllUsers(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Bir hata oluştu.'));
+                  }
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  final documents = snapshot.data!.docs;
+                  UserList = documents
+                      .map((e) =>
+                          ChatUser.fromJson(e.data() as Map<String, dynamic>))
+                      .toList();
+                  if (UserList.isNotEmpty) {
+                    return ListView.builder(
+                      itemCount:
+                          _isSearch ? _searchList.length : UserList.length,
+                      itemBuilder: (context, index) {
+                        return UserCard(
+                          user:
+                              _isSearch ? _searchList[index] : UserList[index],
+                        );
+                      },
+                    );
+                  } else {
+                    return Center(
+                      child: Text(
+                        "There is no one here!!",
+                        style: TextStyle(fontSize: 25),
+                      ),
+                    );
+                  }
+                },
+              )),
         ),
-        body: Padding(
-            padding: EdgeInsets.only(top: 10.0),
-            child: StreamBuilder<QuerySnapshot>(
-              stream: APIs.getAllUsers(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Center(child: Text('Bir hata oluştu.'));
-                }
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                final documents = snapshot.data!.docs;
-                UserList = documents
-                    .map((e) =>
-                        ChatUser.fromJson(e.data() as Map<String, dynamic>))
-                    .toList();
-                if (UserList.isNotEmpty) {
-                  return ListView.builder(
-                    itemCount: _isSearch ? _searchList.length : UserList.length,
-                    itemBuilder: (context, index) {
-                      return UserCard(
-                        user: _isSearch ? _searchList[index] : UserList[index],
-                      );
-                    },
-                  );
-                } else {
-                  return Center(
-                    child: Text(
-                      "There is no one here!!",
-                      style: TextStyle(fontSize: 25),
-                    ),
-                  );
-                }
-              },
-            )),
       ),
     );
   }
