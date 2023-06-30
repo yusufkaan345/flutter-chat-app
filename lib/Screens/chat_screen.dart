@@ -42,7 +42,7 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,
-            flexibleSpace: _appbar(Colors.purple.shade600),
+            flexibleSpace: _appbar(Color.fromARGB(255, 154, 125, 240)),
           ),
           body: GestureDetector(
             onTap: () {
@@ -52,7 +52,7 @@ class _ChatScreenState extends State<ChatScreen> {
               }
             },
             child: Container(
-              color: Color.fromARGB(255, 154, 42, 234),
+              color: Color.fromARGB(255, 196, 185, 248),
               child: Column(
                 children: [
                   Expanded(
@@ -150,7 +150,10 @@ class _ChatScreenState extends State<ChatScreen> {
                           onPressed: () {
                             Navigator.pop(context);
                           },
-                          icon: Icon(Icons.arrow_back)),
+                          icon: Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                          )),
                       ClipRRect(
                           borderRadius: BorderRadius.circular(1000),
                           child: CachedNetworkImage(
@@ -176,7 +179,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                 ? list[0].name.toString()
                                 : widget.user.name.toString(),
                             style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w500),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white),
                           ),
                           SizedBox(
                             height: 4,
@@ -193,9 +198,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                     context: context,
                                     lastActive:
                                         widget.user.lastActive.toString()),
-                            style: TextStyle(
-                              fontSize: 14,
-                            ),
+                            style: TextStyle(fontSize: 14, color: Colors.white),
                           ),
                         ],
                       )

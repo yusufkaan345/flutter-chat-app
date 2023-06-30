@@ -31,7 +31,14 @@ class _ProphileScreenState extends State<ProphileScreen> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          title: Text("Prophile Screen"),
+          iconTheme: IconThemeData(
+            color: Colors.white,
+          ),
+          title: Text(
+            "Prophile Screen",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.blue.shade500,
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
@@ -48,7 +55,7 @@ class _ProphileScreenState extends State<ProphileScreen> {
           },
           label: Text("Log Out"),
           icon: Icon(Icons.exit_to_app),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: Color.fromARGB(255, 0, 145, 255),
         ),
         body: Form(
           key: _formKey,
